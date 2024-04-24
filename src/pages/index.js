@@ -1,15 +1,16 @@
-import Head from 'next/head'
+import Chart from 'chart.js/auto';
+import Head from 'next/head';
 import React, { useState, useEffect } from 'react';
-import { Bar } from 'react-chartjs-2'
-import fetch from 'node-fetch'
-import Papa from 'papaparse'
-import Chart from 'chart.js/auto'
+import { Bar } from 'react-chartjs-2';
+import fetch from 'node-fetch';
+import Papa from 'papaparse';
+import axios from 'axios';
+
+
 export default function Home({ data }) {
-  const [selectedRegion, setSelectedRegion] = useState("");
-  const [showTotal, setShowTotal] = useState(true);
-  const [showMales, setShowMales] = useState(true);
-  const [showFemales, setShowFemales] = useState(true);
+  const [selectedRegion, setSelectedRegion] = useState('');
   const [chartData, setChartData] = useState(null);
+  const labels = ['Всего', 'Мужчины', 'Женщины'];
 
   const regionLabels = data.populations.data.slice(1).map(item => item[0]);
   const totalPopulations = data.populations.data.slice(1).map(item => item[1]);
@@ -17,7 +18,7 @@ export default function Home({ data }) {
   const females = data.populations.data.slice(1).map(item => item[3]);
 
   useEffect(() => {
-    if (selectedRegion === "") {
+    if (selectedRegion === '') {
       setChartData({
         labels: regionLabels,
         datasets: [
@@ -26,28 +27,28 @@ export default function Home({ data }) {
             data: totalPopulations,
             backgroundColor: 'rgba(255, 99, 132, 0.2)',
             borderColor: 'rgb(255, 99, 132)',
-            borderWidth: 1
+            borderWidth: 1,
           },
           {
             label: 'Мужчины',
             data: males,
             backgroundColor: 'rgba(54, 162, 235, 0.2)',
             borderColor: 'rgb(54, 162, 235)',
-            borderWidth: 1
+            borderWidth: 1,
           },
           {
             label: 'Женщины',
             data: females,
             backgroundColor: 'rgba(255, 205, 86, 0.2)',
             borderColor: 'rgb(255, 205, 86)',
-            borderWidth: 1
-          }
-        ]
+            borderWidth: 1,
+          },
+        ],
       });
     } else {
       const selectedIndex = regionLabels.indexOf(selectedRegion);
       setChartData({
-        labels: ['Всего', 'Мужчины', 'Женщины'],
+        labels: labels,
         datasets: [
           {
             label: selectedRegion,
@@ -55,34 +56,36 @@ export default function Home({ data }) {
             backgroundColor: [
               'rgba(255, 99, 132, 0.2)',
               'rgba(54, 162, 235, 0.2)',
-              'rgba(255, 205, 86, 0.2)'
+              'rgba(255, 205, 86, 0.2)',
             ],
-            borderColor: [
-              'rgb(255, 99, 132)',
-              'rgb(54, 162, 235)',
-              'rgb(255, 205, 86)'
-            ],
-            borderWidth: 1
-          }
-        ]
+            borderColor: ['rgb(255, 99, 132)', 'rgb(54, 162, 235)', 'rgb(255, 205, 86)'],
+            borderWidth: 1,
+          },
+        ],
       });
     }
   }, [selectedRegion]);
 
-  const handleChangeRegion = (event) => {
+  const handleChangeRegion = event => {
     setSelectedRegion(event.target.value);
   };
 
-  const handleChangeShowTotal = () => {
-    setShowTotal(!showTotal);
-  };
-
-  const handleChangeShowMales = () => {
-    setShowMales(!showMales);
-  };
-
-  const handleChangeShowFemales = () => {
-    setShowFemales(!showFemales);
+  const handleDownload = async () => {
+    const fileUrl = 'https://raw.githubusercontent.com/TyuninaA/VercelTesting/177d66a2442bc9649fb8431a95f138e8b681965e/city_population.csv';
+    try {
+      const response = await axios.get(fileUrl, { responseType: 'blob' });
+      console.log('Ответ:', response);
+      const blob = new Blob([response.data]);
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', 'city_population.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Ошибка скачивания файла:', error);
+    }
   };
 
   return (
@@ -105,35 +108,14 @@ export default function Home({ data }) {
           >
             <option value="">Выберите регион</option>
             {regionLabels.map(label => (
-              <option key={label} value={label}>{label}</option>
+              <option key={label} value={label}>
+                {label}
+              </option>
             ))}
           </select>
-          <div className="space-x-2">
-            <input
-              type="checkbox"
-              id="showTotal"
-              checked={showTotal}
-              onChange={handleChangeShowTotal}
-            />
-            <label htmlFor="showTotal" className="text-gray-700">Показать Всего</label>
-            <input
-              type="checkbox"
-              id="showMales"
-              checked={showMales}
-              onChange={handleChangeShowMales}
-            />
-            <label htmlFor="showMales" className="text-gray-700">Показать Мужчин</label>
-            <input
-              type="checkbox"
-              id="showFemales"
-              checked={showFemales}
-              onChange={handleChangeShowFemales}
-            />
-            <label htmlFor="showFemales" className="text-gray-700">Показать Женщин</label>
-          </div>
         </div>
         {chartData && (
-          <div className="w-full mx-auto mb-4">
+          <div className="w-full mx-auto mb-4" style={{ width: '50%' }}>
             <Bar
               options={{
                 plugins: {
@@ -141,20 +123,20 @@ export default function Home({ data }) {
                     display: true,
                     text: 'Население городов Казахстана по регионам',
                     font: {
-                      size: 16
-                    }
+                      size: 16,
+                    },
                   },
                   legend: {
                     display: true,
-                    position: 'bottom'
-                  }
+                    position: 'bottom',
+                  },
                 },
                 responsive: true,
-                maintainAspectRatio: false
+                maintainAspectRatio: false,
               }}
               data={chartData}
-              height={400}
-
+              height={800}
+          
             />
           </div>
         )}
@@ -186,20 +168,24 @@ export default function Home({ data }) {
           </div>
         )}
         <div className="flex justify-end mt-4 mx-auto">
-          <a href="https://github.com/open-data-kazakhstan/city-population.git" className="text-blue-500 mr-4" target="_blank" rel="noopener noreferrer">Ссылка на GitHub</a>
-          <a href="https://github.com/open-data-kazakhstan/city-population/blob/1050c4217988a6eb1526198061b36b942cb3997b/data/city_population.csv" className="bg-blue-500 text-white px-4 py-2 rounded-lg" download>Скачать датасет</a>
+          <a href="https://github.com/open-data-kazakhstan/city-population.git" className="bg-white-500 text-white px-4 py-2 rounded-lg" target="_blank" rel="noopener noreferrer">
+            <img src="/github.png" alt="GitHub" width="32" height="32" />
+          </a>
+          <button onClick={handleDownload} className="bg-white-500 text-white px-4 py-2 rounded-lg">
+            <img src="/downloading.png" alt="Download" width="32" height="32" />
+          </button>
         </div>
       </main>
     </>
-  )
+  );
 }
 
 export async function getServerSideProps() {
   const res = await fetch('https://raw.githubusercontent.com/TyuninaA/VercelTesting/177d66a2442bc9649fb8431a95f138e8b681965e/city_population.csv');
 
-  const text = await res.text()
+  const text = await res.text();
   const data = {
-    populations: Papa.parse(text)
-  }
-  return { props: { data } }
+    populations: Papa.parse(text),
+  };
+  return { props: { data } };
 }
