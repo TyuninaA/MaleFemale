@@ -6,9 +6,9 @@ import fetch from 'node-fetch';
 import Papa from 'papaparse';
 import axios from 'axios';
 
-
 export default function Home({ data }) {
   const [selectedRegion, setSelectedRegion] = useState('');
+  const [selectedYear, setSelectedYear] = useState('2022');
   const [chartData, setChartData] = useState(null);
   const labels = ['Всего', 'Мужчины', 'Женщины'];
 
@@ -70,6 +70,10 @@ export default function Home({ data }) {
     setSelectedRegion(event.target.value);
   };
 
+  const handleChangeYear = event => {
+    setSelectedYear(event.target.value);
+  };
+
   const handleDownload = async () => {
     const fileUrl = 'https://raw.githubusercontent.com/TyuninaA/VercelTesting/177d66a2442bc9649fb8431a95f138e8b681965e/city_population.csv';
     try {
@@ -100,22 +104,33 @@ export default function Home({ data }) {
         <h3 className="text-4xl font-normal leading-normal mt-0 mb-2 text-center text-sky-800">
           Население городов Казахстана по регионам
         </h3>
-        <div className="flex items-center justify-center mb-4">
-          <select
-            className="border border-gray-300 rounded-md p-2 mr-2"
-            value={selectedRegion}
-            onChange={handleChangeRegion}
-          >
-            <option value="">Выберите регион</option>
-            {regionLabels.map(label => (
-              <option key={label} value={label}>
-                {label}
-              </option>
-            ))}
-          </select>
+        <div className="flex justify-left items-center mb-4" style={{ marginLeft: '28%' }}>
+          <div className="mr-2">
+            <select
+              className="border border-gray-300 rounded-md p-2"
+              value={selectedRegion}
+              onChange={handleChangeRegion}
+            >
+              <option value="">Выберите регион</option>
+              {regionLabels.map(label => (
+                <option key={label} value={label}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <select
+              className="border border-gray-300 rounded-md p-2"
+              value={selectedYear}
+              onChange={handleChangeYear}
+            >
+              <option value="2022">2022</option>
+            </select>
+          </div>
         </div>
-        {chartData && (
-          <div className="w-full mx-auto mb-4" style={{ width: '50%' }}>
+        <div className="w-full mx-auto mb-4" style={{ width: '50%' }}>
+          {chartData && (
             <Bar
               options={{
                 plugins: {
@@ -136,37 +151,34 @@ export default function Home({ data }) {
               }}
               data={chartData}
               height={800}
-          
             />
-          </div>
-        )}
-        {selectedRegion && (
-          <div className="w-full mx-auto mb-4">
-            <h4 className="text-xl font-semibold mb-2 text-center">Данные по выбранному региону: {selectedRegion}</h4>
+          )}
+        </div>
+        <div className="w-full mx-auto mb-4">
+          <h4 className="text-xl font-semibold mb-2 text-center">Данные из Датасета в таблице</h4>
+          <div className="overflow-x-auto">
             <table className="table-auto border-collapse border border-gray-400 mx-auto">
               <thead>
-                <tr>
-                  <th className="border border-gray-400 px-4 py-2">Показатель</th>
-                  <th className="border border-gray-400 px-4 py-2">Значение</th>
+                <tr className="bg-gray-200">
+                  <th className="border border-gray-400 px-4 py-2">Регион</th>
+                  <th className="border border-gray-400 px-4 py-2">Всего</th>
+                  <th className="border border-gray-400 px-4 py-2">Мужчины</th>
+                  <th className="border border-gray-400 px-4 py-2">Женщины</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td className="border border-gray-400 px-4 py-2">Всего</td>
-                  <td className="border border-gray-400 px-4 py-2">{totalPopulations[regionLabels.indexOf(selectedRegion)]}</td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-400 px-4 py-2">Мужчины</td>
-                  <td className="border border-gray-400 px-4 py-2">{males[regionLabels.indexOf(selectedRegion)]}</td>
-                </tr>
-                <tr>
-                  <td className="border border-gray-400 px-4 py-2">Женщины</td>
-                  <td className="border border-gray-400 px-4 py-2">{females[regionLabels.indexOf(selectedRegion)]}</td>
-                </tr>
+                {data.populations.data.slice(1).map((row, index) => (
+                  <tr key={index} className={index % 2 === 0 ? 'bg-gray-100' : 'bg-white'}>
+                    <td className="border border-gray-400 px-4 py-2">{row[0]}</td>
+                    <td className="border border-gray-400 px-4 py-2">{row[1]}</td>
+                    <td className="border border-gray-400 px-4 py-2">{row[2]}</td>
+                    <td className="border border-gray-400 px-4 py-2">{row[3]}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
-        )}
+        </div>
         <div className="flex justify-end mt-4 mx-auto">
           <a href="https://github.com/open-data-kazakhstan/city-population.git" className="bg-white-500 text-white px-4 py-2 rounded-lg" target="_blank" rel="noopener noreferrer">
             <img src="/github.png" alt="GitHub" width="32" height="32" />
