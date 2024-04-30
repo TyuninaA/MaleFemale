@@ -189,11 +189,7 @@ export default function Home({ data, readmeContent }) {
         <div className="w-full mx-auto mb-4">
           <h4 className="text-xl font-semibold mb-2 text-center">Данные из Датасета в таблице</h4>
           <div className="overflow-x-auto">
-            <div className="flex justify-center mb-2 mx-auto">
-              <button onClick={handleDownload} className="bg-white-500 text-white px-4 py-2 rounded-lg">
-                <img src="/downloading.png" alt="Download" width="32" height="32" />
-              </button>
-            </div>
+  
             <table className="table-auto border-collapse border border-gray-400 mx-auto">
               <thead>
                 <tr className="bg-gray-200">
@@ -211,17 +207,25 @@ export default function Home({ data, readmeContent }) {
                     <td className="border border-gray-400 px-4 py-2">{row[2]}</td>
                     <td className="border border-gray-400 px-4 py-2">{row[3]}</td>
                   </tr>
+                  
                 ))}
               </tbody>
+              
             </table>
+            <div className="flex justify-center mb-2 mx-auto">
+              <button onClick={handleDownload} className="bg-white-500 text-white px-4 py-2 rounded-lg">
+                <img src="/downloading.png" alt="Download" width="50" height="50" />
+              </button>
+            </div>
           </div>
         </div>
         <div className="flex justify-end mt-4 mx-auto">
           <a href="https://github.com/open-data-kazakhstan/city-population.git" className="bg-white-500 text-white px-4 py-2 rounded-lg" target="_blank" rel="noopener noreferrer">
-            <img src="/github.png" alt="GitHub" width="32" height="32" />
+            <img src="/github.png" alt="GitHub" width="50" height="50" />
           </a>
         </div>
-        <div className="markdown-body" dangerouslySetInnerHTML={{ __html: mdParser.render(readmeContent) }} />
+        <main style={{ marginLeft: '5%', marginRight: '2%' }}>
+        <div className="markdown-body" dangerouslySetInnerHTML={{ __html: mdParser.render(readmeContent) }} /></main>
       </main>
     </>
   );
