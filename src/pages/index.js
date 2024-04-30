@@ -5,7 +5,6 @@ import { Bar } from 'react-chartjs-2';
 import fetch from 'node-fetch';
 import Papa from 'papaparse';
 import axios from 'axios';
-import fs from 'fs';
 import md from 'markdown-it';
 import hljs from 'highlight.js';
 
@@ -118,8 +117,8 @@ export default function Home({ data, readmeContent }) {
         <meta name="description" content="City populations dashboard" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/4.0.0/github-markdown.min.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/github.min.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/4.0.0/github-markdown.min.css" />
         <style>
           {`
             .toc {
@@ -162,7 +161,7 @@ export default function Home({ data, readmeContent }) {
             </select>
           </div>
         </div>
-        <div className="w-full mx-auto mb-4" style={{ width: '80%' }}>
+        <div className="w-full mx-auto mb-4" style={{ width: '50%' }}>
           {chartData && (
             <Bar
               options={{
@@ -190,11 +189,11 @@ export default function Home({ data, readmeContent }) {
         <div className="w-full mx-auto mb-4">
           <h4 className="text-xl font-semibold mb-2 text-center">Данные из Датасета в таблице</h4>
           <div className="overflow-x-auto">
-          <div className="flex justify-center mb-2 mx-auto">
-            <button onClick={handleDownload} className="bg-white-500 text-white px-4 py-2 rounded-lg">
-              <img src="/downloading.png" alt="Download" width="32" height="32" />
-            </button>
-          </div>
+            <div className="flex justify-center mb-2 mx-auto">
+              <button onClick={handleDownload} className="bg-white-500 text-white px-4 py-2 rounded-lg">
+                <img src="/downloading.png" alt="Download" width="32" height="32" />
+              </button>
+            </div>
             <table className="table-auto border-collapse border border-gray-400 mx-auto">
               <thead>
                 <tr className="bg-gray-200">
@@ -222,21 +221,22 @@ export default function Home({ data, readmeContent }) {
             <img src="/github.png" alt="GitHub" width="32" height="32" />
           </a>
         </div>
-        <div className="markdown-body" dangerouslySetInnerHTML={{ __html: readmeContent }} />
+        <div className="markdown-body" dangerouslySetInnerHTML={{ __html: mdParser.render(readmeContent) }} />
       </main>
     </>
   );
 }
 
 export async function getServerSideProps() {
-  const res = await fetch('https://raw.githubusercontent.com/TyuninaA/VercelTesting/177d66a2442bc9649fb8431a95f138e8b681965e/city_population.csv');
-  const text = await res.text();
+  const res = await fetch('https://api.github.com/repos/TyuninaA/DoD/contents/README.md');
+  const readme = await res.json();
+  const readmeContent = Buffer.from(readme.content, 'base64').toString('utf8'); // Декодируем содержимое из base64
+
+  const csvRes = await fetch('https://raw.githubusercontent.com/TyuninaA/VercelTesting/177d66a2442bc9649fb8431a95f138e8b681965e/city_population.csv');
+  const csvText = await csvRes.text();
   const data = {
-    populations: Papa.parse(text),
+    populations: Papa.parse(csvText),
   };
 
-  const readmeContent = fs.readFileSync('README.md', 'utf8'); // Читаем содержимое файла README.md
-  const readmeHTML = mdParser.render(readmeContent); // Конвертируем Markdown в HTML
-
-  return { props: { data, readmeContent: readmeHTML } };
+  return { props: { data, readmeContent } };
 }
