@@ -157,6 +157,11 @@ export default function Home({ data }) {
         <div className="w-full mx-auto mb-4">
           <h4 className="text-xl font-semibold mb-2 text-center">Данные из Датасета в таблице</h4>
           <div className="overflow-x-auto">
+          <div className="flex justify-center mb-2 mx-auto">
+            <button onClick={handleDownload} className="bg-white-500 text-white px-4 py-2 rounded-lg">
+              <img src="/downloading.png" alt="Download" width="32" height="32" />
+            </button>
+          </div>
             <table className="table-auto border-collapse border border-gray-400 mx-auto">
               <thead>
                 <tr className="bg-gray-200">
@@ -183,9 +188,6 @@ export default function Home({ data }) {
           <a href="https://github.com/open-data-kazakhstan/city-population.git" className="bg-white-500 text-white px-4 py-2 rounded-lg" target="_blank" rel="noopener noreferrer">
             <img src="/github.png" alt="GitHub" width="32" height="32" />
           </a>
-          <button onClick={handleDownload} className="bg-white-500 text-white px-4 py-2 rounded-lg">
-            <img src="/downloading.png" alt="Download" width="32" height="32" />
-          </button>
         </div>
       </main>
     </>
