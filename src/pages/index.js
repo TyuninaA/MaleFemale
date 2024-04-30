@@ -5,8 +5,27 @@ import { Bar } from 'react-chartjs-2';
 import fetch from 'node-fetch';
 import Papa from 'papaparse';
 import axios from 'axios';
+import fs from 'fs';
+import md from 'markdown-it';
+import hljs from 'highlight.js';
 
-export default function Home({ data }) {
+const mdParser = new md({
+  html: true,
+  highlight: function (str, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return `<pre class="hljs"><code>${hljs.highlight(lang, str, true).value}</code></pre>`;
+      } catch (__) {}
+    }
+    return `<pre class="hljs"><code>${md.utils.escapeHtml(str)}</code></pre>`;
+  }
+}).use(require('markdown-it-highlightjs'))
+  .use(require('markdown-it-table-of-contents'), {
+    includeLevel: [1, 2, 3],
+    containerClass: 'toc'
+  });
+
+export default function Home({ data, readmeContent }) {
   const [selectedRegion, setSelectedRegion] = useState('');
   const [selectedYear, setSelectedYear] = useState('2022');
   const [chartData, setChartData] = useState(null);
@@ -99,6 +118,20 @@ export default function Home({ data }) {
         <meta name="description" content="City populations dashboard" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/4.0.0/github-markdown.min.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/github.min.css" />
+        <style>
+          {`
+            .toc {
+              margin: 0;
+              padding: 0;
+              list-style-type: none;
+            }
+            .toc li {
+              margin-left: 1em;
+            }
+          `}
+        </style>
       </Head>
       <main>
         <h3 className="text-4xl font-normal leading-normal mt-0 mb-2 text-center text-sky-800">
@@ -129,7 +162,7 @@ export default function Home({ data }) {
             </select>
           </div>
         </div>
-        <div className="w-full mx-auto mb-4" style={{ width: '50%' }}>
+        <div className="w-full mx-auto mb-4" style={{ width: '80%' }}>
           {chartData && (
             <Bar
               options={{
@@ -189,6 +222,7 @@ export default function Home({ data }) {
             <img src="/github.png" alt="GitHub" width="32" height="32" />
           </a>
         </div>
+        <div className="markdown-body" dangerouslySetInnerHTML={{ __html: readmeContent }} />
       </main>
     </>
   );
@@ -196,10 +230,13 @@ export default function Home({ data }) {
 
 export async function getServerSideProps() {
   const res = await fetch('https://raw.githubusercontent.com/TyuninaA/VercelTesting/177d66a2442bc9649fb8431a95f138e8b681965e/city_population.csv');
-
   const text = await res.text();
   const data = {
     populations: Papa.parse(text),
   };
-  return { props: { data } };
+
+  const readmeContent = fs.readFileSync('README.md', 'utf8'); // Читаем содержимое файла README.md
+  const readmeHTML = mdParser.render(readmeContent); // Конвертируем Markdown в HTML
+
+  return { props: { data, readmeContent: readmeHTML } };
 }
