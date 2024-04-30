@@ -161,7 +161,7 @@ export default function Home({ data, readmeContent }) {
             </select>
           </div>
         </div>
-        <div className="w-full mx-auto mb-4" style={{ width: '50%' }}>
+        <div className="w-full mx-auto mb-4" style={{ width: '80%' }}>
           {chartData && (
             <Bar
               options={{
