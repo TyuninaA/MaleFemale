@@ -71,9 +71,6 @@ export default class MyDocument extends Document {
                 padding: 20px;
                 background-color: #333;
                 color: #fff;
-                position: fixed;
-                bottom: 0;
-                left: 0;
                 width: 100%;
               }
             `}
